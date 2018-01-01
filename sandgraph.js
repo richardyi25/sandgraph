@@ -26,11 +26,14 @@ function Edge(start, end, dir, data, thick, fsize, color){
 		this.beta = (this.alpha + Math.PI) % (Math.PI * 2);
 		// Calculate the "real" endpoints of the this
 		// This is offset by the size of the nodes and the angle of the this
-		// 8/15 to account for outer circle thickness too
+		// 8/15 to account for outer circle thickness
+		// 1.6 is to account for arrowhead
 		this.rx1 = this.start.x + this.start.size * 8/15 * Math.cos(this.alpha);
 		this.ry1 = this.start.y + this.start.size * 8/15 * Math.sin(this.alpha);
 		this.rx2 = this.end.x + this.end.size * 8/15 * Math.cos(this.beta);
 		this.ry2 = this.end.y + this.end.size * 8/15 * Math.sin(this.beta);
+		this.rx3 = this.end.x + (this.end.size * 8/15 + this.thick * 1.6) * Math.cos(this.beta);
+		this.ry3 = this.end.y + (this.end.size * 8/15 + this.thick * 1.6) * Math.sin(this.beta);
 	}
 
 	this.update();
@@ -112,10 +115,13 @@ function Graph(){
 			c.drawLine({
 				x1: edge.rx1,
 				y1: edge.ry1,
-				x2: edge.rx2,
-				y2: edge.ry2,
+				// Draw arrowed edges a bit shorter
+				x2: edge.dir ? edge.rx3 : edge.rx2,
+				y2: edge.dir ? edge.ry3 : edge.ry2,
 				strokeStyle: edge.color,
-				strokeWidth: edge.thick
+				strokeWidth: edge.thick,
+				endArrow: edge.dir,
+				arrowRadius: edge.thick * 3,
 			});
 
 			// Some trig to determine where the weight is drawn
