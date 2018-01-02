@@ -2,7 +2,8 @@ var print;
 var c;
 
 // Node Class
-function Node(x, y, data, cdata, size, color){
+function Node(id, x, y, data, cdata, size, color){
+	this.id = id;
 	this.x = x;
 	this.y = y;
 	this.data = data;
@@ -43,19 +44,23 @@ function Edge(start, end, dir, data, thick, fsize, color){
 
 // Graph Class
 function Graph(nodes, edges){
-	var index, edge;
+	var edge, rev;
 	this.nodes = nodes;
 	this.adj = [];
+	this.queue = [];
 
 	for(var i = 0; i < nodes.length; i++)
 		this.adj[i] = [];
 	
 	for(var i = 0; i < edges.length; i++){
 		edge = edges[i];
-		index = edge.start;
 		edge.start = this.nodes[edge.start];
 		edge.end = this.nodes[edge.end];
-		this.adj[index].push(edge);
+		this.adj[edge.start.id].push(edge);
+		if(edge.dir == 0){
+			rev = new Edge(edge.end, edge.start, 0, edge.data, edge.thick, edge.fsize, edge.color);
+			this.adj[edge.end.id].push(rev);
+		}
 	}
 
 	// Draw the graph to the canvas
@@ -65,49 +70,6 @@ function Graph(nodes, edges){
 
 		//Clear screen
 		c.clearCanvas();
-
-		// Draw nodes
-		for(var i = 0; i < this.nodes.length; i++){
-			node = this.nodes[i];
-			// Convert to strings
-			data = "" + node.data;
-			cdata = "" + node.cdata;
-
-			// Draw node body
-			c.drawEllipse({
-				x: node.x,
-				y: node.y,
-				width: node.size,
-				height: node.size,
-				strokeStyle: node.color,
-				strokeWidth: node.size/15,
-				fillStyle: 'white'
-			});
-
-			// Draw in-node text
-			c.drawText({
-				text: data,
-				x: node.x,
-				y: node.y,
-				fromCenter: true,
-				fillStyle: 'black',
-				// Scales based on size of node and length of text
-				fontSize: node.size * 0.9 / Math.pow(data.length, 0.8),
-				fontFamily: 'Arial'
-			});
-
-			// Draw out-node text
-			c.drawText({
-				text: cdata,
-				x: node.x - node.size / 2,
-				y: node.y - node.size / 2,
-				fromCenter: true,
-				fillStyle: 'black',
-				// Scales based on size of node and length of text
-				fontSize: node.size * 0.35 / Math.pow(cdata.length, 0.8),
-				fontFamily: 'Arial'
-			});
-		}
 
 		// Draw Edges
 		// Nested for loop that loops through adjacency list
@@ -155,9 +117,72 @@ function Graph(nodes, edges){
 				fillStyle: edge.color
 			});
 		}}
+
+		// Draw nodes
+		for(var i = 0; i < this.nodes.length; i++){
+			node = this.nodes[i];
+			// Convert to strings
+			data = "" + node.data;
+			cdata = "" + node.cdata;
+
+			// Draw node body
+			c.drawEllipse({
+				x: node.x,
+				y: node.y,
+				width: node.size,
+				height: node.size,
+				strokeStyle: node.color,
+				strokeWidth: node.size/15,
+				fillStyle: 'white'
+			});
+
+			// Draw in-node text
+			c.drawText({
+				text: data,
+				x: node.x,
+				y: node.y,
+				fromCenter: true,
+				fillStyle: 'black',
+				// Scales based on size of node and length of text
+				fontSize: node.size * 0.85 / Math.pow(data.length, 0.8),
+				fontFamily: 'Arial'
+			});
+
+			// Draw out-node text
+			c.drawText({
+				text: cdata,
+				x: node.x - node.size / 2,
+				y: node.y - node.size / 2,
+				fromCenter: true,
+				fillStyle: 'black',
+				// Scales based on size of node and length of text
+				fontSize: node.size * 0.35 / Math.pow(cdata.length, 0.8),
+				fontFamily: 'Arial'
+			});
+		}
+
+	}
+
+	// Add animation to the queue
+	this.push = function(obj, index, val){
+		this.queue.push([obj, index, val]);
 	}
 }
 
+// Resolve an animation on a delay
+function init(g, delay){
+	window.setInterval(function(){
+		if(g.queue.length == 0)
+			return;
+
+		var obj = g.queue[0][0], index = g.queue[0][1], val = g.queue[0][2];
+		obj[index] = val;
+		g.queue.shift();
+		g.render();
+	}, delay);
+}
+
+// Variable binding
 function main(){
 	c = $('canvas');
 	print = console.log;

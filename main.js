@@ -1,24 +1,55 @@
-var g = new Graph();
+var g;
 
-function rint(a, b){
-	return Math.floor(a + (b - a + 1) * Math.random());
+var nodes = [
+	new Node(0, 150, 150, 'A', '', 70, 'red'),
+	new Node(1, 200, 350, 'B', '', 70, 'red'),
+	new Node(2, 450, 300, 'C', '', 70, 'red'),
+	new Node(3, 475, 500, 'D', '', 70, 'red'),
+	new Node(4, 650, 100, 'E', '', 70, 'red'),
+	new Node(5, 750, 450, 'F', '', 70, 'red'),
+	new Node(6, 900, 300, 'G', '', 70, 'red')
+];
+var edges = [
+	new Edge(0, 1, 0, '', 10, 0, 'blue'),
+	new Edge(0, 2, 0, '', 10, 0, 'blue'),
+	new Edge(1, 2, 0, '', 10, 0, 'blue'),
+	new Edge(1, 3, 0, '', 10, 0, 'blue'),
+	new Edge(2, 3, 0, '', 10, 0, 'blue'),
+	new Edge(2, 4, 0, '', 10, 0, 'blue'),
+	new Edge(3, 5, 0, '', 10, 0, 'blue'),
+	new Edge(3, 6, 0, '', 10, 0, 'blue'),
+	new Edge(4, 6, 0, '', 10, 0, 'blue')
+];
+
+g = new Graph(nodes, edges);
+
+function bfs(start){
+	var cur, to;
+	vist = [];
+	for(var i = 0; i < nodes.length; i++)
+		vist[i] = false;
+
+	var queue = [start];
+	vist[start] = true;
+	g.push(nodes[start], 'cdata', 'V');
+	
+	while(queue.length > 0){
+		cur = queue.shift();
+		g.push(nodes[cur], 'color', 'green');
+		for(var i = 0; i < g.adj[cur].length; i++){
+			to = g.adj[cur][i].end.id;
+			if(vist[to]) continue;
+			vist[to] = true;
+			g.push(nodes[to], 'cdata', 'V');
+			queue.push(to);
+		}
+	}
 }
 
 function main(){
-	g.nodes.push(new Node(350, 200, 1, 10, 200, 'yellow'));
-	g.nodes.push(new Node(100, 100, 2, 20, 100, 'blue'));
-	g.nodes.push(new Node(200, 400, 3, 30, 50, 'red'));
-	g.edges.push(new Edge(g.nodes[1], g.nodes[0], 1, 'data', 3, 30, 'green'));
-	g.edges.push(new Edge(g.nodes[2], g.nodes[0], 0, 'weight', 5, 30, 'purple'));
-	g.edges.push(new Edge(g.nodes[1], g.nodes[2], 1, 'text', 10, 100, 'orange'));
-//	window.setInterval(function(){
-//		for(var i = 0; i < 3; i++){
-//			g.nodes[i].x = rint(0, 1200);
-//			g.nodes[i].y = rint(0, 675);
-//		}
-//		g.render();
-//	}, 500);
 	g.render();
+	init(g, 1000);
+	bfs(4);
 }
 
 $(document).ready(main);
