@@ -26,7 +26,13 @@ function Edge(start, end, dir, data, thick, fsize, color){
 		// Angle from start to end is atan2
 		this.alpha = Math.atan2(this.end.y - this.start.y, this.end.x - this.start.x) + (2 * Math.PI);
 		// Angle but the other way
-		this.beta = (this.alpha + Math.PI) % (Math.PI * 2);
+		this.beta = this.alpha + Math.PI
+		// Ensure positive angles
+		while(this.alpha < 0) this.alpha += Math.PI * 2;
+		while(this.beta < 0) this.beta += Math.PI * 2;
+		this.alpha %= Math.PI * 2;
+		this.beta %= Math.PI * 2;
+
 		// Calculate the "real" endpoints of the this
 		// This is offset by the size of the nodes and the angle of the this
 		// 8/15 to account for outer circle thickness
@@ -46,22 +52,8 @@ function Edge(start, end, dir, data, thick, fsize, color){
 function Graph(nodes, edges){
 	var edge, rev;
 	this.nodes = nodes;
-	this.adj = [];
+	this.edges = edges; 
 	this.queue = [];
-
-	for(var i = 0; i < nodes.length; i++)
-		this.adj[i] = [];
-	
-	for(var i = 0; i < edges.length; i++){
-		edge = edges[i];
-		edge.start = this.nodes[edge.start];
-		edge.end = this.nodes[edge.end];
-		this.adj[edge.start.id].push(edge);
-		if(edge.dir == 0){
-			rev = new Edge(edge.end, edge.start, 0, edge.data, edge.thick, edge.fsize, edge.color);
-			this.adj[edge.end.id].push(rev);
-		}
-	}
 
 	// Draw the graph to the canvas
 	this.render = function(){
@@ -71,10 +63,9 @@ function Graph(nodes, edges){
 		//Clear screen
 		c.clearCanvas();
 
-		// Draw Edges
-		// Nested for loop that loops through adjacency list
-		for(var i = 0; i < this.adj.length; i++){ for(var j = 0; j < this.adj[i].length; j++){
-			edge = this.adj[i][j];
+		// Draw edges
+		for(var i = 0; i < this.edges.length; i++){
+			edge = this.edges[i];
 
 			// Update some angle and math values
 			edge.update();
@@ -97,7 +88,7 @@ function Graph(nodes, edges){
 			// Some trig to determine where the weight is drawn
 
 			// Add pi/2 to make it perpendicular (clockwise)
-			perp = (edge.alpha + Math.PI / 2);
+			perp = edge.alpha + Math.PI / 2;
 
 			// Weight is drawn perpendicular to midpoint
 			// The distance scales with edge thickness and font size
@@ -110,13 +101,14 @@ function Graph(nodes, edges){
 				text: data,
 				x: wx,
 				y: wy,
-				rotate: edge.beta * 180 / Math.PI,
+				// Right-side up
+				rotate: Math.min(Math.abs(Math.PI - edge.alpha), Math.abs(Math.PI - edge.beta)) * 180 / Math.PI,
 				fontSize: edge.fsize,
 				fromCenter: true,
 				fontFamily: 'Arial',
 				fillStyle: edge.color
 			});
-		}}
+		}
 
 		// Draw nodes
 		for(var i = 0; i < this.nodes.length; i++){
@@ -146,6 +138,17 @@ function Graph(nodes, edges){
 				// Scales based on size of node and length of text
 				fontSize: node.size * 0.85 / Math.pow(data.length, 0.8),
 				fontFamily: 'Arial'
+			});
+
+			//Draw out-node background
+			c.drawEllipse({
+				x: node.x - node.size / 2,
+				y: node.y - node.size / 2,
+				fillStyle: '#EEE',
+				fromCenter: true,
+				// A bit larger than the out-node text
+				width: node.size * 0.45 / Math.pow(cdata.length, 0.8),
+				height: node.size * 0.45 / Math.pow(cdata.length, 0.8),
 			});
 
 			// Draw out-node text
@@ -183,9 +186,7 @@ function init(g, delay){
 }
 
 // Variable binding
-function main(){
+$(document).ready(function(){
 	c = $('canvas');
 	print = console.log;
-}
-
-$(document).ready(main);
+});

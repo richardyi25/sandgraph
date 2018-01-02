@@ -1,55 +1,88 @@
-var g;
+var g, inf = '∞';
 
 var nodes = [
-	new Node(0, 150, 150, 'A', '', 70, 'red'),
-	new Node(1, 200, 350, 'B', '', 70, 'red'),
-	new Node(2, 450, 300, 'C', '', 70, 'red'),
-	new Node(3, 475, 500, 'D', '', 70, 'red'),
-	new Node(4, 650, 100, 'E', '', 70, 'red'),
-	new Node(5, 750, 450, 'F', '', 70, 'red'),
-	new Node(6, 900, 300, 'G', '', 70, 'red')
+	new Node(0, 150, 150, inf, 'A', 70, 'yellow'),
+	new Node(1, 200, 350, inf, 'B', 70, 'yellow'),
+	new Node(2, 450, 300, inf, 'C', 70, 'yellow'),
+	new Node(3, 475, 500, inf, 'D', 70, 'yellow'),
+	new Node(4, 650, 100, inf, 'E', 70, 'yellow'),
+	new Node(5, 750, 450, inf, 'F', 70, 'yellow'),
+	new Node(6, 900, 300, inf, 'G', 70, 'yellow'),
+	new Node(7, 620, 300, inf, 'H', 70, 'yellow')
 ];
+
 var edges = [
-	new Edge(0, 1, 0, '', 10, 0, 'blue'),
-	new Edge(0, 2, 0, '', 10, 0, 'blue'),
-	new Edge(1, 2, 0, '', 10, 0, 'blue'),
-	new Edge(1, 3, 0, '', 10, 0, 'blue'),
-	new Edge(2, 3, 0, '', 10, 0, 'blue'),
-	new Edge(2, 4, 0, '', 10, 0, 'blue'),
-	new Edge(3, 5, 0, '', 10, 0, 'blue'),
-	new Edge(3, 6, 0, '', 10, 0, 'blue'),
-	new Edge(4, 6, 0, '', 10, 0, 'blue')
+	new Edge(nodes[0], nodes[1], 0, 1, 10, 20, 'blue'),
+	new Edge(nodes[0], nodes[2], 0, 2, 10, 20, 'blue'),
+	new Edge(nodes[0], nodes[4], 0, 7, 10, 20, 'blue'),
+	new Edge(nodes[1], nodes[2], 0, 5, 10, 20, 'blue'),
+	new Edge(nodes[1], nodes[3], 0, 4, 10, 20, 'blue'),
+	new Edge(nodes[2], nodes[3], 0, 2, 10, 20, 'blue'),
+	new Edge(nodes[4], nodes[2], 0, 3, 10, 20, 'blue'),
+	new Edge(nodes[2], nodes[7], 0, 6, 10, 20, 'blue'),
+	new Edge(nodes[3], nodes[5], 0, 2, 10, 20, 'blue'),
+	new Edge(nodes[3], nodes[6], 0, 3, 10, 20, 'blue'),
+	new Edge(nodes[4], nodes[6], 0, 3, 10, 20, 'blue')
 ];
 
 g = new Graph(nodes, edges);
 
-function bfs(start){
-	var cur, to;
-	vist = [];
-	for(var i = 0; i < nodes.length; i++)
-		vist[i] = false;
+var adj = [];
+for(var i = 0; i < nodes.length; i++)
+	adj[i] = {};
+for(var i = 0; i < edges.length; i++){
+	var edge = edges[i];
+	adj[edge.start.id][edge.end.id] = {
+		id: i,
+		wt: edge.data
+	};
+	adj[edge.end.id][edge.start.id] = {
+		id: i,
+		wt: edge.data
+	};
+}
+var dist = [];
+var vist = []
+for(var i = 0; i < nodes.length; i++){
+	dist[i] = 999999999999;
+	vist[i] = false;
+}
 
-	var queue = [start];
-	vist[start] = true;
-	g.push(nodes[start], 'cdata', 'V');
-	
-	while(queue.length > 0){
-		cur = queue.shift();
-		g.push(nodes[cur], 'color', 'green');
-		for(var i = 0; i < g.adj[cur].length; i++){
-			to = g.adj[cur][i].end.id;
-			if(vist[to]) continue;
-			vist[to] = true;
-			g.push(nodes[to], 'cdata', 'V');
-			queue.push(to);
+function dijks(start){
+	dist[start] = 0;
+	g.push(nodes[start], 'data', 0);
+
+	//Slow Dijks
+	for(var i = 0; i < nodes.length; i++){
+		var cur = -1;
+		for(var j = 0; j < nodes.length; j++)
+			if(!vist[j] && (cur == -1 || dist[j] < dist[cur]))
+				cur = j;
+
+		vist[cur] = true;
+		g.push(nodes[cur], 'color', 'orange');
+
+		for(var to in adj[cur]){
+			var edge = adj[cur][to].id, wt = adj[cur][to].wt;
+			g.push(g.edges[edge], 'color', 'orange');
+
+			if(!vist[to] && dist[cur] + wt < dist[to]){
+				dist[to] = dist[cur] + wt;
+				g.push(edges[edge], 'color', 'green');
+				g.push(nodes[to], 'data', dist[to]);
+			}
+			else
+				g.push(edges[edge], 'color', 'red');
+
+			g.push(edges[edge], 'color', 'blue');
 		}
+
+		g.push(nodes[cur], 'color', 'green');
 	}
 }
 
-function main(){
+$(document).ready(function(){
 	g.render();
-	init(g, 1000);
-	bfs(4);
-}
-
-$(document).ready(main);
+	dijks(4);
+	init(g, 500);
+});
