@@ -4,7 +4,9 @@ var c;
 // Node Class
 function Node(x, y, data, cdata, size, color){
 	this.x = x;
-	this.y = y; this.data = data; this.cdata = cdata;
+	this.y = y;
+	this.data = data;
+	this.cdata = cdata;
 	this.size = size;
 	this.color = color;
 }
@@ -40,16 +42,20 @@ function Edge(start, end, dir, data, thick, fsize, color){
 }
 
 // Graph Class
-function Graph(){
-	this.nodes = [];
-	this.edges = [];
+function Graph(nodes, edges){
+	var index, edge;
+	this.nodes = nodes;
+	this.adj = [];
 
-	this.addNode = function(){
-
-	}
-
-	this.addEdge = function(){
-
+	for(var i = 0; i < nodes.length; i++)
+		this.adj[i] = [];
+	
+	for(var i = 0; i < edges.length; i++){
+		edge = edges[i];
+		index = edge.start;
+		edge.start = this.nodes[edge.start];
+		edge.end = this.nodes[edge.end];
+		this.adj[index].push(edge);
 	}
 
 	// Draw the graph to the canvas
@@ -104,8 +110,10 @@ function Graph(){
 		}
 
 		// Draw Edges
-		for(var i = 0; i < this.edges.length; i++){
-			edge = this.edges[i];
+		// Nested for loop that loops through adjacency list
+		for(var i = 0; i < this.adj.length; i++){ for(var j = 0; j < this.adj[i].length; j++){
+			edge = this.adj[i][j];
+
 			// Update some angle and math values
 			edge.update();
 			// Convert to string
@@ -146,8 +154,7 @@ function Graph(){
 				fontFamily: 'Arial',
 				fillStyle: edge.color
 			});
-		}
-
+		}}
 	}
 }
 
