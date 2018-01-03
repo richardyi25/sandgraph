@@ -13,7 +13,8 @@ function Node(id, x, y, data, cdata, size, color){
 }
 
 // Edge Class
-function Edge(start, end, dir, data, thick, fsize, color){
+function Edge(id, start, end, dir, data, thick, fsize, color){
+	this.id = id;
 	this.start = start;
 	this.end = end;
 	this.dir = dir;
@@ -26,8 +27,8 @@ function Edge(start, end, dir, data, thick, fsize, color){
 		// Angle from start to end is atan2
 		this.alpha = Math.atan2(this.end.y - this.start.y, this.end.x - this.start.x) + (2 * Math.PI);
 		// Angle but the other way
-		this.beta = this.alpha + Math.PI
-		// Ensure positive angles
+		this.beta = this.alpha + Math.PI;
+		// Ensure angles between 0 and 2pi
 		while(this.alpha < 0) this.alpha += Math.PI * 2;
 		while(this.beta < 0) this.beta += Math.PI * 2;
 		this.alpha %= Math.PI * 2;
@@ -87,8 +88,9 @@ function Graph(nodes, edges){
 
 			// Some trig to determine where the weight is drawn
 
-			// Add pi/2 to make it perpendicular (clockwise)
-			perp = edge.alpha + Math.PI / 2;
+			// "Randomly" add or remove pi/2 to make it perpendicular (clockwise)
+			// If the edge ID is odd, add pi/2, if it's even, remove pi/2
+			perp = edge.alpha + (edge.id & 1 ? 1 : -1) * (Math.PI / 2);
 
 			// Weight is drawn perpendicular to midpoint
 			// The distance scales with edge thickness and font size
@@ -101,8 +103,6 @@ function Graph(nodes, edges){
 				text: data,
 				x: wx,
 				y: wy,
-				// Right-side up
-				rotate: Math.min(Math.abs(Math.PI - edge.alpha), Math.abs(Math.PI - edge.beta)) * 180 / Math.PI,
 				fontSize: edge.fsize,
 				fromCenter: true,
 				fontFamily: 'Arial',
@@ -165,24 +165,6 @@ function Graph(nodes, edges){
 		}
 
 	}
-
-	// Add animation to the queue
-	this.push = function(obj, index, val){
-		this.queue.push([obj, index, val]);
-	}
-}
-
-// Resolve an animation on a delay
-function init(g, delay){
-	window.setInterval(function(){
-		if(g.queue.length == 0)
-			return;
-
-		var obj = g.queue[0][0], index = g.queue[0][1], val = g.queue[0][2];
-		obj[index] = val;
-		g.queue.shift();
-		g.render();
-	}, delay);
 }
 
 // Variable binding
