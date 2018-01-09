@@ -24,8 +24,20 @@ function Edge(id, start, end, dir, data, thick, fsize, color){
 	this.color = color;
 
 	this.update = function(){
+		var start, end;
+		// Information based on edge direction
+		// TODO: Properly change architecture
+		if(this.dir == -1){
+			var start = this.end;
+			var end = this.start;
+		}
+		else{
+			var start = this.start;
+			var end = this.end
+		}
+
 		// Angle from start to end is atan2
-		this.alpha = Math.atan2(this.end.y - this.start.y, this.end.x - this.start.x) + (2 * Math.PI);
+		this.alpha = Math.atan2(end.y - start.y, end.x - start.x) + (2 * Math.PI);
 		// Angle but the other way
 		this.beta = this.alpha + Math.PI;
 		// Ensure angles between 0 and 2pi
@@ -39,12 +51,12 @@ function Edge(id, start, end, dir, data, thick, fsize, color){
 		// Ratio to account for outer circle thickness
 		// 1.6 is to account for arrowhead
 		var ratio = 1/2;
-		this.rx1 = this.start.x + this.start.size * ratio * Math.cos(this.alpha);
-		this.ry1 = this.start.y + this.start.size * ratio * Math.sin(this.alpha);
-		this.rx2 = this.end.x + this.end.size * ratio * Math.cos(this.beta);
-		this.ry2 = this.end.y + this.end.size * ratio * Math.sin(this.beta);
-		this.rx3 = this.end.x + (this.end.size * 8/15 + this.thick * 1.6) * Math.cos(this.beta);
-		this.ry3 = this.end.y + (this.end.size * 8/15 + this.thick * 1.6) * Math.sin(this.beta);
+		this.rx1 = start.x + start.size * ratio * Math.cos(this.alpha);
+		this.ry1 = start.y + start.size * ratio * Math.sin(this.alpha);
+		this.rx2 = end.x + end.size * ratio * Math.cos(this.beta);
+		this.ry2 = end.y + end.size * ratio * Math.sin(this.beta);
+		this.rx3 = end.x + (end.size * 8/15 + this.thick * 1.6) * Math.cos(this.beta);
+		this.ry3 = end.y + (end.size * 8/15 + this.thick * 1.6) * Math.sin(this.beta);
 	}
 
 	this.update();

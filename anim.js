@@ -2,6 +2,7 @@
 var anim = [];
 // Whether animation is running automatically
 var auto = false;
+var factor = 1;
 
 // Wrap into array
 function push(a, b, c){
@@ -34,7 +35,7 @@ function next(){
 	}
 
 	g.render();
-	if(auto) window.setTimeout(next, delay);
+	if(auto) window.setTimeout(next, delay * factor);
 }
 
 function init(){
