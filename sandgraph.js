@@ -1,4 +1,4 @@
-var print;
+var print = console.log;
 var c;
 
 // Node Class
@@ -36,12 +36,13 @@ function Edge(id, start, end, dir, data, thick, fsize, color){
 
 		// Calculate the "real" endpoints of the this
 		// This is offset by the size of the nodes and the angle of the this
-		// 8/15 to account for outer circle thickness
+		// Ratio to account for outer circle thickness
 		// 1.6 is to account for arrowhead
-		this.rx1 = this.start.x + this.start.size * 8/15 * Math.cos(this.alpha);
-		this.ry1 = this.start.y + this.start.size * 8/15 * Math.sin(this.alpha);
-		this.rx2 = this.end.x + this.end.size * 8/15 * Math.cos(this.beta);
-		this.ry2 = this.end.y + this.end.size * 8/15 * Math.sin(this.beta);
+		var ratio = 1/2;
+		this.rx1 = this.start.x + this.start.size * ratio * Math.cos(this.alpha);
+		this.ry1 = this.start.y + this.start.size * ratio * Math.sin(this.alpha);
+		this.rx2 = this.end.x + this.end.size * ratio * Math.cos(this.beta);
+		this.ry2 = this.end.y + this.end.size * ratio * Math.sin(this.beta);
 		this.rx3 = this.end.x + (this.end.size * 8/15 + this.thick * 1.6) * Math.cos(this.beta);
 		this.ry3 = this.end.y + (this.end.size * 8/15 + this.thick * 1.6) * Math.sin(this.beta);
 	}
@@ -54,7 +55,6 @@ function Graph(nodes, edges){
 	var edge, rev;
 	this.nodes = nodes;
 	this.edges = edges; 
-	this.queue = [];
 
 	// Draw the graph to the canvas
 	this.render = function(){
@@ -67,6 +67,8 @@ function Graph(nodes, edges){
 		// Draw edges
 		for(var i = 0; i < this.edges.length; i++){
 			edge = this.edges[i];
+
+			if(edge.color == 'invis') continue;
 
 			// Update some angle and math values
 			edge.update();
@@ -170,5 +172,4 @@ function Graph(nodes, edges){
 // Variable binding
 $(document).ready(function(){
 	c = $('canvas');
-	print = console.log;
 });
